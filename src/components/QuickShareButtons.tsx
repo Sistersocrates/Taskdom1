@@ -25,18 +25,44 @@ const QuickShareButtons: React.FC<QuickShareButtonsProps> = ({
   size = 'sm',
   variant = 'minimal'
 }) => {
-  const { shareProgress, shareStreak, shareAchievement } = useSocialShare();
+  const {
+    shareProgress,
+    shareStreak,
+    shareAchievement,
+    shareToFacebook,
+    shareToInstagram,
+    shareToSnapchat,
+    openShareModal,
+  } = useSocialShare();
 
-  const handleShare = () => {
+  const handleShare = (platform: 'facebook' | 'instagram' | 'snapchat' | 'twitter' | 'copy' | 'modal') => {
+    let content;
     switch (type) {
       case 'progress':
-        if (data.book) shareProgress(data.book);
+        if (data.book) content = { text: `I'm reading ${data.book.title}!`, url: window.location.href };
         break;
       case 'streak':
-        if (data.streakDays) shareStreak(data.streakDays);
+        if (data.streakDays) content = { text: `I'm on a ${data.streakDays}-day reading streak!`, url: window.location.href };
         break;
       case 'achievement':
-        if (data.achievement) shareAchievement(data.achievement, data.achievementData);
+        if (data.achievement) content = { text: `I just unlocked the ${data.achievement} achievement!`, url: window.location.href };
+        break;
+    }
+
+    if (!content) return;
+
+    switch (platform) {
+      case 'facebook':
+        shareToFacebook(content);
+        break;
+      case 'instagram':
+        shareToInstagram(content);
+        break;
+      case 'snapchat':
+        shareToSnapchat(content);
+        break;
+      case 'modal':
+        openShareModal(content);
         break;
     }
   };
@@ -44,7 +70,7 @@ const QuickShareButtons: React.FC<QuickShareButtonsProps> = ({
   if (variant === 'minimal') {
     return (
       <button
-        onClick={handleShare}
+        onClick={() => handleShare('modal')}
         className={cn(
           'inline-flex items-center text-gray-400 hover:text-red-400 transition-colors',
           className
@@ -62,22 +88,31 @@ const QuickShareButtons: React.FC<QuickShareButtonsProps> = ({
       <div className="flex space-x-1">
         <SocialShareButton
           platform="facebook"
-          url="#"
-          title="Check out my reading progress!"
+          onClick={() => handleShare('facebook')}
+          variant="icon"
+          size={size}
+        />
+        <SocialShareButton
+          platform="instagram"
+          onClick={() => handleShare('instagram')}
+          variant="icon"
+          size={size}
+        />
+        <SocialShareButton
+          platform="snapchat"
+          onClick={() => handleShare('snapchat')}
           variant="icon"
           size={size}
         />
         <SocialShareButton
           platform="twitter"
-          url="#"
-          title="Check out my reading progress!"
+          onClick={() => handleShare('twitter')}
           variant="icon"
           size={size}
         />
         <SocialShareButton
           platform="copy"
-          url="#"
-          title="Check out my reading progress!"
+          onClick={() => handleShare('copy')}
           variant="icon"
           size={size}
         />

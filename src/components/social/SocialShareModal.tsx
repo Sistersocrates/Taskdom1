@@ -216,7 +216,17 @@ const SocialShareModal: React.FC<SocialShareModalProps> = ({
                 className="w-full justify-center"
               />
               <SocialShareButton
-                platform="linkedin"
+                platform="instagram"
+                url={shareUrl}
+                title={selectedContent.title}
+                description={selectedContent.description}
+                hashtags={content.hashtags}
+                variant="pill"
+                size="sm"
+                className="w-full justify-center"
+              />
+              <SocialShareButton
+                platform="snapchat"
                 url={shareUrl}
                 title={selectedContent.title}
                 description={selectedContent.description}
@@ -238,17 +248,6 @@ const SocialShareModal: React.FC<SocialShareModalProps> = ({
             </div>
           </div>
 
-          {/* Instagram Special Instructions */}
-          <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 border border-purple-500/30 p-4 rounded-lg">
-            <h4 className="font-medium text-white mb-2 flex items-center">
-              <Instagram className="h-5 w-5 mr-2" />
-              Instagram Sharing
-            </h4>
-            <p className="text-sm text-gray-300">
-              Instagram doesn't support direct link sharing. Use the "Copy Link" button above, 
-              then paste the link in your Instagram story or bio to share your reading progress!
-            </p>
-          </div>
 
           {/* Action Buttons */}
           <div className="flex space-x-3 pt-4 border-t border-gray-700">

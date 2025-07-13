@@ -64,6 +64,26 @@ export const useSocialShare = () => {
     shareTBR,
     shareReadingList,
     shareAchievement,
-    shareBookReview
+    shareBookReview,
+    shareToFacebook,
+    shareToInstagram,
+    shareToSnapchat
   };
+
+  function shareToFacebook(content: ShareableContent) {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(content.url || window.location.href)}&quote=${encodeURIComponent(content.text)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  function shareToInstagram(content: ShareableContent) {
+    // Instagram sharing from web is limited. The common approach is to copy the text and let the user paste it.
+    navigator.clipboard.writeText(`${content.text} ${content.url || ''}`);
+    alert('Copied to clipboard! You can now paste this in your Instagram story or post.');
+  }
+
+  function shareToSnapchat(content: ShareableContent) {
+    // Snapchat sharing is also limited.
+    navigator.clipboard.writeText(`${content.text} ${content.url || ''}`);
+    alert('Copied to clipboard! You can now paste this in your Snapchat story.');
+  }
 };

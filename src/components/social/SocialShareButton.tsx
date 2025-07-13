@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Share2, Facebook, Twitter, Linkedin, Instagram, Copy, Check } from 'lucide-react';
+import { FaSnapchatGhost } from 'react-icons/fa';
 import Button from '../ui/Button';
 import { cn } from '../../utils/cn';
 
 interface SocialShareButtonProps {
-  platform: 'facebook' | 'twitter' | 'linkedin' | 'instagram' | 'copy';
-  url: string;
-  title: string;
+  platform: 'facebook' | 'twitter' | 'linkedin' | 'instagram' | 'snapchat' | 'copy';
+  onClick?: () => void;
+  url?: string;
+  title?: string;
   description?: string;
   hashtags?: string[];
   via?: string;
@@ -17,6 +19,7 @@ interface SocialShareButtonProps {
 
 const SocialShareButton: React.FC<SocialShareButtonProps> = ({
   platform,
+  onClick,
   url,
   title,
   description = '',
@@ -59,6 +62,12 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
       icon: Instagram,
       shareUrl: () => '#' // Instagram doesn't support direct URL sharing
     },
+    snapchat: {
+      name: 'Snapchat',
+      color: 'bg-yellow-400 hover:bg-yellow-500',
+      icon: FaSnapchatGhost,
+      shareUrl: () => '#'
+    },
     copy: {
       name: 'Copy Link',
       color: 'bg-gray-600 hover:bg-gray-700',
@@ -70,6 +79,16 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
   const config = platformConfig[platform];
 
   const handleShare = async () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
+
+    if (!url || !title) {
+      console.error('URL and Title are required for sharing.');
+      return;
+    }
+
     if (platform === 'copy') {
       try {
         await navigator.clipboard.writeText(url);
@@ -78,13 +97,6 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
       } catch (error) {
         console.error('Failed to copy to clipboard:', error);
       }
-      return;
-    }
-
-    if (platform === 'instagram') {
-      // For Instagram, we'll show a message about copying the link
-      await navigator.clipboard.writeText(url);
-      alert('Link copied! You can now paste it in your Instagram story or bio.');
       return;
     }
 
