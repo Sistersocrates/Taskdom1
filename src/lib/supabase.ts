@@ -159,7 +159,7 @@ export const signInWithGoogle = async () => {
           prompt: 'consent',
         },
         redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: 'email profile',
+        scopes: 'email profile https://www.googleapis.com/auth/calendar',
       },
     });
     

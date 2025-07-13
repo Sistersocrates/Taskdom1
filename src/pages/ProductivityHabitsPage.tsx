@@ -27,6 +27,7 @@ import {
   Moon
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import GoogleCalendar from '../components/productivity/GoogleCalendar';
 
 // Predefined habits by category
 const PREDEFINED_HABITS = {
@@ -184,6 +185,8 @@ const ProductivityHabitsPage: React.FC = () => {
             </Button>
           </CardBody>
         </Card>
+
+        {isCalendarConnected && <GoogleCalendar />}
         
         {/* Habits List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
