@@ -43,11 +43,22 @@ export const signUp = async (email: string, password: string, firstName?: string
     if (error) {
       // Use console.warn for expected authentication failures
       console.warn('Sign-up attempt failed:', error.message);
-    } else {
+    } else if (data.user) {
       console.log('Sign-up successful, user:', data.user?.id);
       
-      // We don't need to create a profile here anymore
-      // The database trigger will handle profile creation
+      // Create a 14-day trial subscription
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + 14);
+
+      const { error: subError } = await supabase.from('stripe_subscriptions').insert({
+        customer_id: data.user.id, // Using user_id as customer_id for simplicity
+        status: 'trialing',
+        current_period_end: trialEndDate.getTime() / 1000,
+      });
+
+      if (subError) {
+        console.error('Error creating trial subscription:', subError);
+      }
     }
     
     return { data, error };

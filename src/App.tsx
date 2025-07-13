@@ -80,7 +80,7 @@ function App() {
           <Route 
             path="/home" 
             element={
-              <ProtectedRoute requiredPermission="read:all">
+              <ProtectedRoute>
                 <HomePage />
               </ProtectedRoute>
             } 
@@ -88,7 +88,7 @@ function App() {
           <Route 
             path="/library" 
             element={
-              <ProtectedRoute requiredPermission="read:all">
+              <ProtectedRoute>
                 <LibraryPage />
               </ProtectedRoute>
             } 
@@ -96,7 +96,7 @@ function App() {
           <Route 
             path="/reading/:bookId" 
             element={
-              <ProtectedRoute requiredPermission="read:all">
+              <ProtectedRoute>
                 <ReadingPage />
               </ProtectedRoute>
             } 
@@ -104,7 +104,7 @@ function App() {
           <Route 
             path="/analytics" 
             element={
-              <ProtectedRoute requiredPermission="read:all">
+              <ProtectedRoute>
                 <AnalyticsPage />
               </ProtectedRoute>
             } 
@@ -112,7 +112,7 @@ function App() {
           <Route 
             path="/productivity" 
             element={
-              <ProtectedRoute requiredPermission="read:all">
+              <ProtectedRoute>
                 <ProductivityHabitsPage />
               </ProtectedRoute>
             } 
@@ -120,7 +120,7 @@ function App() {
           <Route 
             path="/streaks" 
             element={
-              <ProtectedRoute requiredPermission="read:all">
+              <ProtectedRoute>
                 <GamificationPage />
               </ProtectedRoute>
             } 
@@ -128,7 +128,7 @@ function App() {
           <Route 
             path="/club/:clubId" 
             element={
-              <ProtectedRoute requiredPermission="join:clubs">
+              <ProtectedRoute>
                 <BookClubPage />
               </ProtectedRoute>
             } 
@@ -136,7 +136,7 @@ function App() {
           <Route 
             path="/voice-settings" 
             element={
-              <ProtectedRoute requiredPermission="use:voice">
+              <ProtectedRoute>
                 <VoiceSettingsPage />
               </ProtectedRoute>
             } 
@@ -144,7 +144,7 @@ function App() {
           <Route 
             path="/praise-customizer" 
             element={
-              <ProtectedRoute requiredPermission="use:voice">
+              <ProtectedRoute>
                 <PraiseCustomizerPage />
               </ProtectedRoute>
             } 
