@@ -14,6 +14,7 @@ interface VoicePraiseState {
   isLoading: boolean;
   error: string | null;
   currentScriptPack: ScriptPack[];
+  customScripts: ScriptPack[];
   voiceSpeed: number;
   voiceStability: number;
   initialize: () => Promise<void>;
@@ -23,6 +24,7 @@ interface VoicePraiseState {
   setVoiceStability: (stability: number) => void;
   playPraise: (triggerType: VoiceTriggerType | string) => Promise<void>;
   playCustomScript: (script: ScriptPack) => Promise<void>;
+  addCustomScript: (script: Omit<ScriptPack, 'id'>) => void;
   playCSVScript: (script: CSVScript) => Promise<void>;
   replayLastPraise: () => Promise<void>;
   loadVoices: () => Promise<void>;
@@ -53,6 +55,7 @@ export const useVoicePraiseStore = create<VoicePraiseState>((set, get) => ({
   isLoading: false,
   error: null,
   currentScriptPack: [],
+  customScripts: [],
   voiceSpeed: 1.0,
   voiceStability: 0.5,
 
@@ -173,6 +176,17 @@ export const useVoicePraiseStore = create<VoicePraiseState>((set, get) => ({
     }
   },
 
+  addCustomScript: (script: Omit<ScriptPack, 'id'>) => {
+    const newScript: ScriptPack = {
+      ...script,
+      id: `custom-${Date.now()}`,
+    };
+    set(state => ({
+      customScripts: [...state.customScripts, newScript]
+    }));
+    get().saveUserPreferences();
+  },
+
   playPraise: async (triggerType: VoiceTriggerType | string) => {
     const { settings, selectedVoiceId, isPlaying, voiceSpeed, voiceStability } = get();
     
@@ -208,58 +222,41 @@ export const useVoicePraiseStore = create<VoicePraiseState>((set, get) => ({
 
       console.log(`Playing praise for trigger: ${triggerType}, style: ${settings.style}, nsfw: ${nsfwLevel}`);
 
-      // First try to get script from CSV scripts
-      const csvEventScripts = getCSVScriptsForEvent(
-        triggerType as any, 
-        settings.style, 
-        nsfwLevel
-      );
+      // Combine all available scripts
+      const allScripts = [
+        ...get().customScripts,
+        ...getCSVScriptsForEvent(triggerType as any, settings.style, nsfwLevel).map(s => ({...s, text: s.script})),
+        ...getScriptsForEvent(triggerType as any, settings.style, nsfwLevel)
+      ];
 
-      if (csvEventScripts.length > 0) {
-        const selectedScript = csvEventScripts[Math.floor(Math.random() * csvEventScripts.length)];
-        text = selectedScript.script;
+      const eventScripts = allScripts.filter(s => s.trigger.toLowerCase() === triggerType.toString().toLowerCase());
+
+      if (eventScripts.length > 0) {
+        const selectedScript = eventScripts[Math.floor(Math.random() * eventScripts.length)];
+        text = selectedScript.text;
         script = {
           id: selectedScript.id,
-          text: selectedScript.script,
+          text: selectedScript.text,
           triggerType: triggerType as VoiceTriggerType,
           style: settings.style
         };
-        console.log('Using CSV script:', selectedScript.id, selectedScript.script);
+        console.log('Using script:', selectedScript.id, selectedScript.text);
       } else {
-        // Fall back to original scripts
-        const eventScripts = getScriptsForEvent(
-          triggerType as any, 
-          settings.style, 
-          nsfwLevel
-        );
-
-        if (eventScripts.length > 0) {
-          const selectedScript = eventScripts[Math.floor(Math.random() * eventScripts.length)];
-          text = selectedScript.text;
+        // Fallback to random script or custom text
+        const randomScript = getRandomScript(settings.style, nsfwLevel);
+        if (randomScript) {
+          text = randomScript.text;
           script = {
-            id: selectedScript.id,
-            text: selectedScript.text,
+            id: randomScript.id,
+            text: randomScript.text,
             triggerType: triggerType as VoiceTriggerType,
             style: settings.style
           };
-          console.log('Using original script:', selectedScript.id, selectedScript.text);
+          console.log('Using random script:', randomScript.id, randomScript.text);
         } else {
-          // Fallback to random script or custom text
-          const randomScript = getRandomScript(settings.style, nsfwLevel);
-          if (randomScript) {
-            text = randomScript.text;
-            script = {
-              id: randomScript.id,
-              text: randomScript.text,
-              triggerType: triggerType as VoiceTriggerType,
-              style: settings.style
-            };
-            console.log('Using random script:', randomScript.id, randomScript.text);
-          } else {
-            // Ultimate fallback to the trigger type as text
-            text = typeof triggerType === 'string' ? triggerType : 'Good job!';
-            console.log('Using fallback text:', text);
-          }
+          // Ultimate fallback to the trigger type as text
+          text = typeof triggerType === 'string' ? triggerType : 'Good job!';
+          console.log('Using fallback text:', text);
         }
       }
 
@@ -417,12 +414,13 @@ export const useVoicePraiseStore = create<VoicePraiseState>((set, get) => ({
 
   saveUserPreferences: async () => {
     try {
-      const { settings, selectedVoiceId, voiceSpeed, voiceStability } = get();
+      const { settings, selectedVoiceId, voiceSpeed, voiceStability, customScripts } = get();
       const preferences = {
         settings,
         selectedVoiceId,
         voiceSpeed,
         voiceStability,
+        customScripts,
         savedAt: new Date().toISOString()
       };
       localStorage.setItem('voicePraisePreferences', JSON.stringify(preferences));
@@ -430,7 +428,8 @@ export const useVoicePraiseStore = create<VoicePraiseState>((set, get) => ({
         selectedVoiceId, 
         style: settings.style,
         speed: voiceSpeed,
-        stability: voiceStability
+        stability: voiceStability,
+        customScriptsCount: customScripts.length
       });
     } catch (error) {
       console.error('Failed to save user preferences:', error);
@@ -446,13 +445,15 @@ export const useVoicePraiseStore = create<VoicePraiseState>((set, get) => ({
           settings: { ...DEFAULT_SETTINGS, ...preferences.settings },
           selectedVoiceId: preferences.selectedVoiceId,
           voiceSpeed: preferences.voiceSpeed || 1.0,
-          voiceStability: preferences.voiceStability || 0.5
+          voiceStability: preferences.voiceStability || 0.5,
+          customScripts: preferences.customScripts || []
         });
         console.log('Loaded voice preferences:', { 
           selectedVoiceId: preferences.selectedVoiceId, 
           style: preferences.settings?.style,
           speed: preferences.voiceSpeed,
-          stability: preferences.voiceStability
+          stability: preferences.voiceStability,
+          customScriptsCount: preferences.customScripts?.length || 0
         });
       }
     } catch (error) {
