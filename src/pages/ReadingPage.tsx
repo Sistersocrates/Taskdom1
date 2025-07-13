@@ -11,7 +11,7 @@ import ReadingProgressSync from '../components/ReadingProgressSync';
 import ReadingProgressIndicator from '../components/ReadingProgressIndicator';
 import QuickShareButtons from '../components/QuickShareButtons';
 import SpiceRating from '../components/SpiceRating';
-import { mockBooks } from '../utils/mockData';
+import { getEnhancedBooks } from '../utils/mockData';
 import { Book } from '../types';
 import { useVoicePraiseStore } from '../store/voicePraiseStore';
 import { useSocialShare } from '../hooks/useSocialShare';
@@ -44,7 +44,8 @@ const ReadingPage: React.FC = () => {
   } = useReadingProgress(bookId || '');
   
   useEffect(() => {
-    const foundBook = mockBooks.find(b => b.id === bookId);
+    const books = getEnhancedBooks();
+    const foundBook = books.find(b => b.id === bookId);
     if (foundBook) {
       setBook(foundBook);
       setCoverImage(foundBook.coverImage);
@@ -54,31 +55,8 @@ const ReadingPage: React.FC = () => {
       if (!progress) {
         setCurrentPage(foundBook.currentPage);
       }
-      
-      // Fetch enhanced cover
-      fetchEnhancedCover(foundBook);
     }
   }, [bookId, progress]);
-
-  const fetchEnhancedCover = async (bookData: Book) => {
-    setIsLoadingCover(true);
-    setCoverError(false);
-
-    try {
-      console.log(`Fetching enhanced cover for reading page: ${bookData.title}`);
-      const enhancedCover = await bookCoverService.getBestCoverImage(bookData);
-      
-      if (enhancedCover) {
-        console.log(`Setting enhanced cover for reading page: ${bookData.title}`);
-        setCoverImage(enhancedCover);
-      }
-    } catch (error) {
-      console.error('Error fetching enhanced cover:', error);
-      setCoverError(true);
-    } finally {
-      setIsLoadingCover(false);
-    }
-  };
 
   useEffect(() => {
     // Set current page from progress when it loads

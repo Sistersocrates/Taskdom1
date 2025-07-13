@@ -4,33 +4,21 @@ import { BookOpen, Star, Shield, Clock, Users, Volume2, Flame, ChevronRight } fr
 import Button from '../components/ui/Button';
 import { Card, CardBody } from '../components/ui/Card';
 import { motion } from 'framer-motion';
-import { bookCoverService } from '../services/bookCoverService';
-import { mockBooks } from '../utils/mockData';
+import { getEnhancedBooks } from '../utils/mockData';
 
 const LandingPage: React.FC = () => {
-  const [featuredBook, setFeaturedBook] = useState(mockBooks[3]); // King of Battle and Blood
-  const [isLoading, setIsLoading] = useState(true);
+  const [featuredBook, setFeaturedBook] = useState(getEnhancedBooks()[3]); // King of Battle and Blood
+  const [isLoading, setIsLoading] = useState(!featuredBook);
 
   useEffect(() => {
-    const enhanceBookCover = async () => {
-      setIsLoading(true);
-      try {
-        console.log('Enhancing featured book cover for landing page...');
-        const enhancedCover = await bookCoverService.getBestCoverImage(featuredBook);
-        setFeaturedBook({
-          ...featuredBook,
-          coverImage: enhancedCover
-        });
-        console.log('Successfully enhanced featured book cover for landing page');
-      } catch (error) {
-        console.error('Error enhancing featured book cover:', error);
-      } finally {
+    if (!featuredBook) {
+      const books = getEnhancedBooks();
+      if (books.length > 3) {
+        setFeaturedBook(books[3]);
         setIsLoading(false);
       }
-    };
-
-    enhanceBookCover();
-  }, []);
+    }
+  }, [featuredBook]);
 
   return (
     <div className="min-h-screen bg-background text-primary-text">

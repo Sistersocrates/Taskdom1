@@ -1,4 +1,5 @@
 import { Book, ReadingGoal, Task, User } from '../types';
+import { bookCoverService } from '../services/bookCoverService';
 
 // Mock user data
 export const mockUser: User = {
@@ -211,6 +212,33 @@ export const popularTropes = [
   'billionaire',
   'academy'
 ];
+
+let enhancedBooks: Book[] = [];
+let isEnhancing = false;
+
+const enhanceAllBookCovers = async () => {
+  if (isEnhancing || enhancedBooks.length > 0) return;
+  isEnhancing = true;
+  try {
+    console.log('Pre-enhancing all mock book covers...');
+    enhancedBooks = await bookCoverService.enhanceBookCovers(mockBooks);
+    console.log('All mock book covers pre-enhanced.');
+  } catch (error) {
+    console.error('Error pre-enhancing book covers:', error);
+    // If enhancement fails, use original mockBooks
+    enhancedBooks = mockBooks;
+  } finally {
+    isEnhancing = false;
+  }
+};
+
+// Immediately start the enhancement process
+enhanceAllBookCovers();
+
+export const getEnhancedBooks = () => {
+  return enhancedBooks.length > 0 ? enhancedBooks : mockBooks;
+};
+
 
 // Praise messages based on styles
 const praiseMessages = {

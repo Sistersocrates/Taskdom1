@@ -12,21 +12,20 @@ import QuickShareButtons from '../components/QuickShareButtons';
 import FloatingActionButton from '../components/FloatingActionButton';
 import TaskModal from '../components/TaskModal';
 import { Plus, BookOpen, Clock, Award, BookMarked, Flame, TrendingUp, Share2 } from 'lucide-react';
-import { mockBooks, mockTasks, mockUser } from '../utils/mockData';
+import { getEnhancedBooks, mockTasks, mockUser } from '../utils/mockData';
 import { Task } from '../types';
 import { useVoicePraiseStore } from '../store/voicePraiseStore';
 import { useSocialShare } from '../hooks/useSocialShare';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { bookCoverService } from '../services/bookCoverService';
 import { useUserStore } from '../store/userStore';
 
 const HomePage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>(mockTasks);
   const [newTaskTitle, setNewTaskTitle] = useState<string>('');
   const [minutesRead, setMinutesRead] = useState<number>(25);
-  const [books, setBooks] = useState(mockBooks);
-  const [isLoadingBooks, setIsLoadingBooks] = useState(true);
+  const [books, setBooks] = useState(getEnhancedBooks());
+  const [isLoadingBooks, setIsLoadingBooks] = useState(books.length === 0);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   
   const { playPraise, testVoice, selectedVoiceId } = useVoicePraiseStore();
@@ -36,25 +35,28 @@ const HomePage: React.FC = () => {
   // Filtered books - currently reading
   const currentlyReading = books.filter(book => book.status === 'currentlyReading');
   
-  // Fetch enhanced book covers on component mount
   useEffect(() => {
-    const enhanceBookCovers = async () => {
-      setIsLoadingBooks(true);
-      
-      try {
-        console.log('Enhancing book covers for home page...');
-        const enhancedBooks = await bookCoverService.enhanceBookCovers(books);
+    const loadBooks = () => {
+      const enhancedBooks = getEnhancedBooks();
+      if (enhancedBooks.length > 0) {
         setBooks(enhancedBooks);
-        console.log('Successfully enhanced book covers for home page');
-      } catch (error) {
-        console.error('Error enhancing book covers:', error);
-      } finally {
         setIsLoadingBooks(false);
       }
     };
     
-    enhanceBookCovers();
-  }, []);
+    // Check if books are already loaded
+    if (books.length === 0) {
+      // If not, set up an interval to check for them
+      const interval = setInterval(() => {
+        loadBooks();
+        if (getEnhancedBooks().length > 0) {
+          clearInterval(interval);
+        }
+      }, 100); // Check every 100ms
+
+      return () => clearInterval(interval);
+    }
+  }, [books]);
   
   // Initialize voice assistant
   useEffect(() => {

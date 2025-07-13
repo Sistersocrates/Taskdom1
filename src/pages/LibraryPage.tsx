@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/layout/MainLayout';
 import { Book } from '../types';
-import { mockBooks } from '../utils/mockData';
+import { getEnhancedBooks } from '../utils/mockData';
 import { Search, Plus, Filter, BookOpen, Share2, Loader2 } from 'lucide-react';
 import BookCard from '../components/BookCard';
 import BookSearchModal from '../components/BookSearchModal';
@@ -18,30 +18,21 @@ const LibraryPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<BookStatus>('all');
   const [sortBy, setSortBy] = useState<SortOption>('title');
-  const [books, setBooks] = useState<Book[]>(mockBooks);
+  const [books, setBooks] = useState<Book[]>([]);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
   const { shareReadingList, shareTBR } = useSocialShare();
   
-  // Enhance book covers on component mount
   useEffect(() => {
-    const enhanceBookCovers = async () => {
+    const loadBooks = () => {
       setIsLoading(true);
-      
-      try {
-        console.log('Enhancing book covers for library page...');
-        const enhancedBooks = await bookCoverService.enhanceBookCovers(books);
-        setBooks(enhancedBooks);
-        console.log('Successfully enhanced book covers for library page');
-      } catch (error) {
-        console.error('Error enhancing book covers:', error);
-      } finally {
-        setIsLoading(false);
-      }
+      const enhancedBooks = getEnhancedBooks();
+      setBooks(enhancedBooks);
+      setIsLoading(false);
     };
     
-    enhanceBookCovers();
+    loadBooks();
   }, []);
   
   // Filter books based on search query and status
