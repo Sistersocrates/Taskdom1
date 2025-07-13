@@ -3,6 +3,7 @@ import { Card, CardBody, CardHeader } from '../ui/Card';
 import Button from '../ui/Button';
 import { Loader2, Play, BookOpen, Shuffle } from 'lucide-react';
 import { ScriptPack } from '../../data/scriptPacks';
+import { getStyleColor } from '../../utils/styleUtils';
 
 interface ScriptLibraryProps {
   scripts: ScriptPack[];
@@ -31,15 +32,6 @@ const ScriptLibrary: React.FC<ScriptLibraryProps> = ({
   uniqueScenarios,
   style,
 }) => {
-  const getStyleColor = (style: string) => {
-    switch (style) {
-      case 'flirty': return 'bg-pink-900/30 text-pink-300';
-      case 'dominant': return 'bg-red-900/30 text-red-300';
-      case 'wholesome': return 'bg-green-900/30 text-green-300';
-      default: return 'bg-gray-800 text-gray-300';
-    }
-  };
-
   const getNSFWColor = (level: 'SFW' | 'NSFW') => {
     return level === 'NSFW' ? 'bg-error-900/30 text-error-300' : 'bg-success-900/30 text-success-300';
   };
