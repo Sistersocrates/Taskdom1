@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { VoiceSettings, VoiceTriggerType, VoiceScript } from '../types/voice';
 import { elevenLabsService, ElevenLabsVoice } from '../services/elevenLabsService';
 import { scriptPacks, getScriptsForEvent, getRandomScript, ScriptPack } from '../data/scriptPacks';
-import { csvScripts, getCSVScriptsForEvent, getRandomCSVScript, CSVScript } from '../data/csvScriptPacks';
 import { useUserStore } from './userStore';
 
 interface VoicePraiseState {
@@ -25,7 +24,6 @@ interface VoicePraiseState {
   playPraise: (triggerType: VoiceTriggerType | string) => Promise<void>;
   playCustomScript: (script: ScriptPack) => Promise<void>;
   addCustomScript: (script: Omit<ScriptPack, 'id'>) => void;
-  playCSVScript: (script: CSVScript) => Promise<void>;
   replayLastPraise: () => Promise<void>;
   loadVoices: () => Promise<void>;
   testVoice: (voiceId: string, text?: string) => Promise<void>;
@@ -225,11 +223,10 @@ export const useVoicePraiseStore = create<VoicePraiseState>((set, get) => ({
       // Combine all available scripts
       const allScripts = [
         ...get().customScripts,
-        ...getCSVScriptsForEvent(triggerType as any, settings.style, nsfwLevel).map(s => ({...s, text: s.script})),
         ...getScriptsForEvent(triggerType as any, settings.style, nsfwLevel)
       ];
 
-      const eventScripts = allScripts.filter(s => s.trigger.toLowerCase() === triggerType.toString().toLowerCase());
+      const eventScripts = allScripts.filter(s => s.scenario.toLowerCase().includes(triggerType.toString().toLowerCase()));
 
       if (eventScripts.length > 0) {
         const selectedScript = eventScripts[Math.floor(Math.random() * eventScripts.length)];
@@ -335,47 +332,6 @@ export const useVoicePraiseStore = create<VoicePraiseState>((set, get) => ({
     }
   },
 
-  playCSVScript: async (script: CSVScript) => {
-    const { settings, selectedVoiceId, isPlaying, voiceSpeed, voiceStability } = get();
-    if (!settings.enabled || isPlaying || !selectedVoiceId) return;
-
-    try {
-      set({ isPlaying: true, error: null });
-
-      console.log('Playing CSV script:', { 
-        voiceId: selectedVoiceId, 
-        text: script.script.substring(0, 50) + '...',
-        speed: voiceSpeed,
-        stability: voiceStability
-      });
-
-      // Use the user's selected voice_id for generation with custom settings
-      await elevenLabsService.generateAndPlay({
-        voice_id: selectedVoiceId,
-        text: script.script,
-        voice_settings: {
-          stability: voiceStability,
-          similarity_boost: 0.75,
-          style: voiceSpeed > 1.0 ? 0.2 : 0,
-          use_speaker_boost: true,
-        },
-      });
-
-      const voiceScript: VoiceScript = {
-        id: script.id,
-        text: script.script,
-        triggerType: 'session_start', // Default trigger type
-        style: settings.style
-      };
-
-      set({ lastPraise: voiceScript });
-    } catch (error) {
-      console.error('Failed to play CSV script:', error);
-      set({ error: 'Failed to play voice message. Please check your connection.' });
-    } finally {
-      set({ isPlaying: false });
-    }
-  },
 
   replayLastPraise: async () => {
     const { lastPraise, selectedVoiceId, settings, isPlaying, voiceSpeed, voiceStability } = get();

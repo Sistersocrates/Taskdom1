@@ -7,7 +7,6 @@ import { useVoicePraiseStore } from '../store/voicePraiseStore';
 import { useUserStore } from '../store/userStore';
 import { ElevenLabsVoice } from '../services/elevenLabsService';
 import { ScriptPack } from '../data/scriptPacks';
-import CSVScriptBrowser from '../components/voice/CSVScriptBrowser';
 
 const PraiseCustomizerPage: React.FC = () => {
   const {

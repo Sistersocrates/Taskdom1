@@ -1,5 +1,3 @@
-import { CSVScript, csvScripts, getCSVScriptsForEvent as getCSVScriptsForEventOriginal } from './csvScriptPacks';
-
 export interface ScriptPack {
   id: string;
   pack: string;
@@ -63,22 +61,9 @@ const originalScriptPacks: ScriptPack[] = [
   // ... (keeping all existing scripts for backward compatibility)
 ];
 
-// Convert CSV scripts to ScriptPack format
-const csvToScriptPacks = (csvScripts: CSVScript[]): ScriptPack[] => {
-  return csvScripts.map(csvScript => ({
-    id: csvScript.id,
-    pack: csvScript.category,
-    tone: csvScript.tone,
-    nsfw_level: csvScript.nsfw_level,
-    scenario: csvScript.subCategory,
-    text: csvScript.script
-  }));
-};
-
 // Combine original and CSV scripts
 export const scriptPacks: ScriptPack[] = [
-  ...originalScriptPacks,
-  ...csvToScriptPacks(csvScripts)
+  ...originalScriptPacks
 ];
 
 // Helper functions to filter scripts
@@ -174,10 +159,6 @@ export const getScriptsForEvent = (
   voiceStyle: 'flirty' | 'dominant' | 'wholesome',
   nsfwLevel: 'SFW' | 'NSFW' = 'SFW'
 ): ScriptPack[] => {
-  // First try to get CSV scripts for the event
-  const csvScripts = getCSVScriptsForEventOriginal(event, voiceStyle, nsfwLevel);
-  const csvScriptPacks = csvToScriptPacks(csvScripts);
-  
   // Then get original scripts
   const eventScenarioMap = {
     session_start: ['Routine-Based Notifications: Reading Start', 'Focus Session Encouragement', 'General Praise', 'Achievement-Based Praise', 'Wholesome & Flirty'],
@@ -207,8 +188,7 @@ export const getScriptsForEvent = (
     )
   );
 
-  // Combine CSV and original scripts, prioritizing CSV scripts
-  return [...csvScriptPacks, ...originalScripts];
+  return originalScripts;
 };
 
 // Get all available script categories
