@@ -54,7 +54,7 @@ const BookSearchModal: React.FC<BookSearchModalProps> = ({ isOpen, onClose, onAd
       setError(null);
       setImageLoadingStates({});
       setImageErrors({});
-      const books = await googleBooksService.searchRomanceBooks(searchQuery.trim(), 20);
+      const books = await googleBooksService.searchBooks(searchQuery.trim(), 20);
       setSearchResults(books);
     } catch (err) {
       setError('Failed to search books. Please try again.');
