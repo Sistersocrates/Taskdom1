@@ -10,6 +10,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { useSocialShare } from '../hooks/useSocialShare';
 import { bookCoverService } from '../services/bookCoverService';
+import BookClubSection from '../components/bookclub/BookClubSection';
 
 type BookStatus = 'all' | 'currentlyReading' | 'wantToRead' | 'finished' | 'dnf';
 type SortOption = 'title' | 'author' | 'spiceRating' | 'progress' | 'dateAdded';
@@ -289,6 +290,8 @@ const LibraryPage: React.FC = () => {
           onClose={() => setIsSearchModalOpen(false)}
           onAddBook={handleAddBook}
         />
+
+        <BookClubSection />
       </div>
     </MainLayout>
   );

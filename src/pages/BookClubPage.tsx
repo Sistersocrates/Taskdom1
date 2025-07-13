@@ -9,11 +9,46 @@ import BookClubChat from '../components/bookclub/BookClubChat';
 import BookClubProgress from '../components/bookclub/BookClubProgress';
 import BookClubDiscussion from '../components/bookclub/BookClubDiscussion';
 import ReadingTimer from '../components/ReadingTimer';
+import BookClubPost from '../components/bookclub/BookClubPost';
 
 const BookClubPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'chat' | 'progress' | 'discussion'>('chat');
+  const [activeTab, setActiveTab] = useState<'posts' | 'chat' | 'progress' | 'discussion'>('posts');
   const [isSyncReading, setSyncReading] = useState(false);
   const playPraise = useVoicePraiseStore(state => state.playPraise);
+  const [posts, setPosts] = useState([
+    {
+      id: '1',
+      author: { name: 'Alexandria', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg' },
+      content: 'Just finished chapter 10! That spicy scene was 🔥🔥🔥',
+      timestamp: '2 hours ago',
+      likes: 12,
+      comments: 3,
+    },
+    {
+      id: '2',
+      author: { name: 'BookBae', avatar: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg' },
+      content: 'I can\'t believe what happened with the main character. I\'m shook!',
+      timestamp: '1 day ago',
+      likes: 5,
+      comments: 1,
+    },
+  ]);
+  const [newPostContent, setNewPostContent] = useState('');
+
+  const handleCreatePost = () => {
+    if (newPostContent.trim()) {
+      const newPost = {
+        id: Date.now().toString(),
+        author: { name: 'You', avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg' },
+        content: newPostContent,
+        timestamp: 'Just now',
+        likes: 0,
+        comments: 0,
+      };
+      setPosts([newPost, ...posts]);
+      setNewPostContent('');
+    }
+  };
 
   // Mock club data
   const clubData = {
@@ -144,6 +179,12 @@ const BookClubPage: React.FC = () => {
               <CardHeader className="border-b">
                 <div className="flex space-x-4">
                   <Button
+                    variant={activeTab === 'posts' ? 'primary' : 'ghost'}
+                    onClick={() => setActiveTab('posts')}
+                  >
+                    Posts
+                  </Button>
+                  <Button
                     variant={activeTab === 'chat' ? 'primary' : 'ghost'}
                     onClick={() => setActiveTab('chat')}
                   >
@@ -164,6 +205,25 @@ const BookClubPage: React.FC = () => {
                 </div>
               </CardHeader>
               <CardBody>
+                {activeTab === 'posts' && (
+                  <div className="space-y-4">
+                    <div className="flex space-x-2">
+                      <textarea
+                        value={newPostContent}
+                        onChange={(e) => setNewPostContent(e.target.value)}
+                        placeholder="Share your thoughts..."
+                        className="flex-1 p-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-gray-800 text-white"
+                        rows={2}
+                      />
+                      <Button onClick={handleCreatePost}>Post</Button>
+                    </div>
+                    <div className="space-y-4">
+                      {posts.map(post => (
+                        <BookClubPost key={post.id} post={post} />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {activeTab === 'chat' && <BookClubChat />}
                 {activeTab === 'progress' && <BookClubProgress />}
                 {activeTab === 'discussion' && <BookClubDiscussion />}
