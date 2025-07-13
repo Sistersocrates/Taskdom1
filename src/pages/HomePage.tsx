@@ -64,9 +64,10 @@ const HomePage: React.FC = () => {
       await useVoicePraiseStore.getState().initialize();
       
       // Welcome message when page loads
-      if (selectedVoiceId) {
+      if (selectedVoiceId && !sessionStorage.getItem('welcomeMessagePlayed')) {
         setTimeout(() => {
           testVoice(selectedVoiceId, "What's my good girl going to get done today?");
+          sessionStorage.setItem('welcomeMessagePlayed', 'true');
         }, 1000);
       }
     };
