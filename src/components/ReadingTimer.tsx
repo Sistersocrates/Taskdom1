@@ -22,6 +22,7 @@ const ReadingTimer: React.FC<ReadingTimerProps> = ({
   const [praiseMessage, setPraiseMessage] = useState('');
   const [timerDuration, setTimerDuration] = useState(defaultMinutes);
   const [showSettings, setShowSettings] = useState(false);
+  const [praiseOnComplete, setPraiseOnComplete] = useState(true);
   
   const { playPraise, testVoice, selectedVoiceId } = useVoicePraiseStore();
   const timerRef = useRef<number | null>(null);
@@ -130,10 +131,12 @@ const ReadingTimer: React.FC<ReadingTimerProps> = ({
         timerRef.current = null;
       }
       // Timer completed
-      playPraise('session_end');
-      setPraiseMessage("That's my obedient little overachiever.");
-      setShowPraise(true);
-      setTimeout(() => setShowPraise(false), 5000);
+      if (praiseOnComplete) {
+        playPraise('session_end');
+        setPraiseMessage("That's my obedient little overachiever.");
+        setShowPraise(true);
+        setTimeout(() => setShowPraise(false), 5000);
+      }
       if (onComplete) {
         onComplete();
       }
@@ -284,6 +287,20 @@ const ReadingTimer: React.FC<ReadingTimerProps> = ({
                 >
                   Apply
                 </Button>
+              </div>
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-700">
+                <label className="text-sm text-gray-300">Praise on completion</label>
+                <button
+                  onClick={() => setPraiseOnComplete(!praiseOnComplete)}
+                  className={`w-10 h-6 rounded-full flex items-center transition-colors ${
+                    praiseOnComplete ? 'bg-accent justify-end' : 'bg-gray-600 justify-start'
+                  }`}
+                >
+                  <motion.div
+                    layout
+                    className="w-5 h-5 bg-white rounded-full shadow"
+                  />
+                </button>
               </div>
             </motion.div>
           )}

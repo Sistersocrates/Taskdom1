@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import GoogleCalendar from '../components/productivity/GoogleCalendar';
+import { useVoicePraiseStore } from '../store/voicePraiseStore';
 
 // Predefined habits by category
 const PREDEFINED_HABITS = {
@@ -75,6 +76,8 @@ const ProductivityHabitsPage: React.FC = () => {
   const [isCalendarConnected, setIsCalendarConnected] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('reading');
   const [selectedPredefinedHabit, setSelectedPredefinedHabit] = useState<number | null>(null);
+  const [praiseOnComplete, setPraiseOnComplete] = useState(true);
+  const playPraise = useVoicePraiseStore(state => state.playPraise);
   
   const handleAddHabit = () => {
     let habitName = newHabitName;
@@ -109,9 +112,16 @@ const ProductivityHabitsPage: React.FC = () => {
   };
   
   const handleToggleHabit = (id: string) => {
-    setHabits(habits.map(habit => 
-      habit.id === id ? { ...habit, completed: !habit.completed } : habit
-    ));
+    setHabits(habits.map(habit => {
+      if (habit.id === id) {
+        const updatedHabit = { ...habit, completed: !habit.completed };
+        if (updatedHabit.completed && praiseOnComplete) {
+          playPraise('task_complete');
+        }
+        return updatedHabit;
+      }
+      return habit;
+    }));
   };
   
   const handleDeleteHabit = (id: string) => {
@@ -187,6 +197,26 @@ const ProductivityHabitsPage: React.FC = () => {
         </Card>
 
         {isCalendarConnected && <GoogleCalendar />}
+
+        <Card>
+          <CardBody className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="p-3 bg-green-900/20 rounded-lg border border-green-700/30 mr-4">
+                <Sparkles className="h-6 w-6 text-green-400" />
+              </div>
+              <div>
+                <h3 className="font-medium text-white">Praise on Completion</h3>
+                <p className="text-sm text-gray-400">Get voice praise when you complete a habit</p>
+              </div>
+            </div>
+            <Button
+              variant={praiseOnComplete ? "primary" : "outline"}
+              onClick={() => setPraiseOnComplete(!praiseOnComplete)}
+            >
+              {praiseOnComplete ? 'Enabled' : 'Disabled'}
+            </Button>
+          </CardBody>
+        </Card>
         
         {/* Habits List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
