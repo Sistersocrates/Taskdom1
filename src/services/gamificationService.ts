@@ -19,7 +19,7 @@ const supabase = createClient(
 class GamificationService {
   // Streak Management
   async updateStreak(
-    streakType: SmutStreak['streak_type'],
+    streakType: SmutStreak['streak_type']
     activityData?: Record<string, any>
   ): Promise<SmutStreak | null> {
     try {
